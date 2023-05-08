@@ -12,11 +12,26 @@
     />
 
     <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="./lib/leaflet/leaflet.css" />
 
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+      integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+      crossorigin=""
+    />
+    <script
+      defer
+      src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+      integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+      crossorigin=""
+    ></script>
+
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+    ></script>
     <script defer src="script.js"></script>
-    <script defer src="./lib/leaflet/leaflet.js"></script>
-    <title>Mapty // Map your workouts</title>
+    <title>mapty // Map your workouts</title>
   </head>
   <body>
     <div class="sidebar">
@@ -42,6 +57,7 @@
               placeholder="min"
             />
           </div>
+
           <div class="form__row">
             <label class="form__label">Cadence</label>
             <input
