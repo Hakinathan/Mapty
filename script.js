@@ -17,38 +17,13 @@ const inputElevation = document.querySelector('.form__input--elevation');
 // Classes
 
 class Workout {
-  #coords;
-  #distance;
-  #duration;
-  #date = new Date();
-  #id = (Date.now() + '').slice(-10);
+  date = new Date();
+  id = (Date.now() + '').slice(-10);
 
   constructor(coords, distance, duration) {
-    this.#coords = coords; // [lat, lng]
-    this.#distance = distance; // km
-    this.#duration = duration; // min
-  }
-
-  // Getters
-
-  get id() {
-    return this.#id;
-  }
-
-  get coords() {
-    return this.#coords;
-  }
-
-  get distance() {
-    return this.#distance;
-  }
-
-  get duration() {
-    return this.#duration;
-  }
-
-  get date() {
-    return this.#date;
+    this.coords = coords; // [lat, lng]
+    this.distance = distance; // in km
+    this.duration = duration; // in min
   }
 
   _setDescription() {
@@ -62,44 +37,36 @@ class Workout {
 }
 
 class Running extends Workout {
-  #cadence;
+  cadence;
   type = 'running';
 
   constructor(coords, distance, duration, cadence) {
     super(coords, distance, duration);
-    this.#cadence = cadence;
-    this.#calcPace();
+    this.cadence = cadence;
+    this.calcPace();
     this._setDescription();
   }
 
-  #calcPace() {
+  calcPace() {
     this.pace = this.duration / this.distance;
     return this.pace;
-  }
-
-  get cadence() {
-    return this.#cadence;
   }
 }
 
 class Cycling extends Workout {
-  #elevationGain;
+  elevationGain;
   type = 'cycling';
 
   constructor(coords, distance, duration, elevationGain) {
     super(coords, distance, duration);
-    this.#elevationGain = elevationGain;
-    this.#calcSpeed();
+    this.elevationGain = elevationGain;
+    this.calcSpeed();
     this._setDescription();
   }
 
-  #calcSpeed() {
+  calcSpeed() {
     this.speed = this.distance / (this.duration / 60);
     return this.speed;
-  }
-
-  get elevationGain() {
-    return this.#elevationGain;
   }
 }
 
@@ -111,12 +78,15 @@ class App {
   #map;
   #mapEvent;
   #workouts = [];
+  #zoomLevel = 13;
 
   constructor() {
     this.#getPosition();
+    this.#getLocalStorage();
     form.addEventListener('submit', this.#newWorkout.bind(this));
 
     inputType.addEventListener('change', this.#toggleElevationField);
+    containerWorkouts.addEventListener('click', this.#moveTopPopup.bind(this));
   }
 
   #getPosition() {
@@ -129,10 +99,10 @@ class App {
 
   #loadMap(position) {
     if (position.code === 1)
-      this.#map = L.map('map').setView([50.85045, 4.34878], 13);
+      this.#map = L.map('map').setView([50.85045, 4.34878], this.#zoomLevel);
     else {
       const { latitude, longitude } = position.coords;
-      this.#map = L.map('map').setView([latitude, longitude], 13);
+      this.#map = L.map('map').setView([latitude, longitude], this.#zoomLevel);
     }
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -141,6 +111,10 @@ class App {
     }).addTo(this.#map);
 
     this.#map.on('click', this.#showForm.bind(this));
+
+    this.#workouts.forEach(work => {
+      this.#renderWorkoutMarker(work);
+    });
   }
 
   #showForm(mapE) {
@@ -212,6 +186,8 @@ class App {
     this.#renderWorkout(workout);
 
     this.#hideForm();
+
+    this.#setLocalStorage();
   }
 
   #renderWorkoutMarker(workout) {
@@ -282,6 +258,45 @@ class App {
       `;
 
     form.insertAdjacentHTML('afterend', html);
+  }
+
+  #moveTopPopup(e) {
+    const workoutEl = e.target.closest('.workout');
+
+    if (!workoutEl) return;
+
+    const workout = this.#workouts.find(
+      work => work.id === workoutEl.dataset.id
+    );
+
+    this.#map.setView(workout.coords, this.#zoomLevel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
+  }
+
+  #setLocalStorage() {
+    console.log(this.#workouts);
+    localStorage.setItem('workouts', JSON.stringify(this.#workouts));
+  }
+
+  #getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem('workouts'));
+
+    if (!data) return;
+
+    this.#workouts = data;
+
+    this.#workouts.forEach(work => {
+      this.#renderWorkout(work);
+    });
+  }
+
+  reset() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 
